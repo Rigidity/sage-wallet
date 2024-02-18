@@ -1,5 +1,5 @@
 [package]
-name = "arbor-wallet"
+name = "sage-wallet"
 version = "0.0.0"
 description = "A Tauri App"
 authors = ["you"]
@@ -17,6 +17,12 @@ tauri-specta = { version = "=2.0.0-rc.4", features = ["javascript", "typescript"
 bip39 = "2.0.0"
 rand = "0.8.5"
 rand_chacha = "0.3.1"
+keyring = "2.3.2"
+chia-bls = "0.5.1"
+hex = "0.4.3"
+bincode = "1.3.3"
+aes-gcm = "0.10.3"
+parking_lot = "0.12.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

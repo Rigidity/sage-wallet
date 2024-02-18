@@ -20,6 +20,12 @@ export default function CreateWallet() {
     commands.generateMnemonic(long).then(setMnemonic);
   };
 
+  const createWallet = () => {
+    commands.importWalletFromMnemonic(name, mnemonic).then(() => {
+      navigate("/wallet");
+    });
+  };
+
   useEffect(() => {
     generateMnemonic();
   }, [long]);
@@ -86,7 +92,11 @@ export default function CreateWallet() {
         ))}
       </div>
 
-      <Button label="Create Wallet" className="w-full mt-5" />
+      <Button
+        onClick={createWallet}
+        label="Create Wallet"
+        className="w-full mt-5"
+      />
     </div>
   );
 }

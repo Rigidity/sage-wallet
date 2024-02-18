@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "arbor-wallet",
+    "productName": "sage-wallet",
     "version": "0.0.0"
   },
   "tauri": {
@@ -25,7 +25,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Arbor Wallet",
+        "title": "Sage Wallet",
         "width": 1200,
         "height": 750
       }

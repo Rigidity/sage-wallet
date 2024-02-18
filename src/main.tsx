@@ -9,14 +9,17 @@ import "primeflex/primeflex.css";
 import "primeicons/primeicons.css";
 
 import App from "./App";
+import { commands } from "./bindings";
 
 const element = document.querySelector("#root") as HTMLElement;
 const root = ReactDOM.createRoot(element);
 
+const keyList = await commands.keyList();
+
 root.render(
   <StrictMode>
     <PrimeReactProvider>
-      <App />
+      <App keyList={keyList} />
     </PrimeReactProvider>
   </StrictMode>,
 );

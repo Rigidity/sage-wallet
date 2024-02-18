@@ -6,6 +6,12 @@ return await TAURI_INVOKE("plugin:tauri-specta|generate_mnemonic", { long });
 },
 async verifyMnemonic(mnemonic: string) : Promise<boolean> {
 return await TAURI_INVOKE("plugin:tauri-specta|verify_mnemonic", { mnemonic });
+},
+async keyList() : Promise<KeyList> {
+return await TAURI_INVOKE("plugin:tauri-specta|key_list");
+},
+async importWalletFromMnemonic(name: string, mnemonic: string) : Promise<null> {
+return await TAURI_INVOKE("plugin:tauri-specta|import_wallet_from_mnemonic", { name, mnemonic });
 }
 }
 
@@ -13,7 +19,8 @@ return await TAURI_INVOKE("plugin:tauri-specta|verify_mnemonic", { mnemonic });
 
 /** user-defined types **/
 
-
+export type KeyInfo = { name: string; mnemonic: string | null; secretKey: string | null; publicKey: string; fingerprint: number }
+export type KeyList = { activeFingerprint: number | null; keys: KeyInfo[] }
 
 /** tauri-specta globals **/
 
