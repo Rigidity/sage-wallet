@@ -37,6 +37,14 @@ pub fn key_list(state: State<AppState>) -> KeyList {
 
 #[command]
 #[specta]
+pub fn log_in(state: State<AppState>, fingerprint: Option<u32>) {
+    let mut key_list = state.key_list.lock();
+    key_list.active_fingerprint = fingerprint;
+    save_keys(&key_list);
+}
+
+#[command]
+#[specta]
 pub fn import_wallet_from_mnemonic(state: State<AppState>, name: String, mnemonic: String) {
     let seed = Mnemonic::from_str(&mnemonic).unwrap().to_seed("");
     let secret_key = SecretKey::from_seed(&seed);

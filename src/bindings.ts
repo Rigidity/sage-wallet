@@ -12,6 +12,9 @@ return await TAURI_INVOKE("plugin:tauri-specta|key_list");
 },
 async importWalletFromMnemonic(name: string, mnemonic: string) : Promise<null> {
 return await TAURI_INVOKE("plugin:tauri-specta|import_wallet_from_mnemonic", { name, mnemonic });
+},
+async logIn(fingerprint: number | null) : Promise<null> {
+return await TAURI_INVOKE("plugin:tauri-specta|log_in", { fingerprint });
 }
 }
 

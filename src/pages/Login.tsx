@@ -1,31 +1,37 @@
 import { useEffect, useState } from "react";
-import { WalletInfo, commands } from "../bindings";
-import { Button } from "primereact/button";
+import { KeyInfo, KeyList, commands } from "../bindings";
 import { Tag } from "primereact/tag";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const [wallets, setWallets] = useState<WalletInfo[]>([]);
+  const [keys, setKeys] = useState<KeyList | null>(null);
 
   useEffect(() => {
-    commands.walletList().then(setWallets);
+    commands.keyList().then(setKeys);
   }, []);
 
   return (
     <div className="grid m-6">
-      {wallets.map((wallet, i) => (
-        <WalletItem key={i} info={wallet} />
-      ))}
+      {keys?.keys.map((keyInfo, i) => <KeyItem key={i} info={keyInfo} />)}
     </div>
   );
 }
 
-interface WalletItemProps {
-  info: WalletInfo;
+interface KeyItemProps {
+  info: KeyInfo;
 }
 
-function WalletItem({ info }: WalletItemProps) {
+function KeyItem({ info }: KeyItemProps) {
+  const navigate = useNavigate();
+
+  const logIn = () => {
+    commands.logIn(info.fingerprint).then(() => {
+      navigate("/wallet");
+    });
+  };
+
   return (
-    <div className="col-12 md:col-6 lg:col-4">
+    <div onClick={logIn} className="col-12 md:col-6 lg:col-4 cursor-pointer">
       <div className="surface-0 shadow-2 p-3 border-1 border-50 border-round">
         <div className="flex justify-content-between mb-3">
           <div>
@@ -34,13 +40,8 @@ function WalletItem({ info }: WalletItemProps) {
             </span>
             <div className="text-900 font-medium text-xl">{info.name}</div>
           </div>
-          <div>
-            <Button icon="pi pi-pencil" rounded text />
-            <Button icon="pi pi-info-circle" rounded text severity="info" />
-            <Button icon="pi pi-trash" rounded text severity="danger" />
-          </div>
         </div>
-        {info.is_hot_wallet ? (
+        {info.secretKey !== null ? (
           <Tag icon="pi pi-wallet" value="Hot Wallet" severity="danger" />
         ) : (
           <Tag icon="pi pi-wallet" value="Cold Wallet" severity="info" />

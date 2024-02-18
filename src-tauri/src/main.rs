@@ -20,7 +20,8 @@ fn main() {
             generate_mnemonic,
             verify_mnemonic,
             key_list,
-            import_wallet_from_mnemonic
+            import_wallet_from_mnemonic,
+            log_in
         ]);
 
         #[cfg(debug_assertions)]
