@@ -45,7 +45,20 @@ pub fn log_in(state: State<AppState>, fingerprint: Option<u32>) {
 
 #[command]
 #[specta]
-pub fn import_wallet_from_mnemonic(state: State<AppState>, name: String, mnemonic: String) {
+pub fn delete_fingerprint(state: State<AppState>, fingerprint: u32) {
+    let mut key_list = state.key_list.lock();
+    key_list.keys.retain(|key| key.fingerprint != fingerprint);
+
+    if key_list.active_fingerprint == Some(fingerprint) {
+        key_list.active_fingerprint = None;
+    }
+
+    save_keys(&key_list);
+}
+
+#[command]
+#[specta]
+pub fn import_from_mnemonic(state: State<AppState>, name: String, mnemonic: String) {
     let seed = Mnemonic::from_str(&mnemonic).unwrap().to_seed("");
     let secret_key = SecretKey::from_seed(&seed);
     let public_key = secret_key.public_key();

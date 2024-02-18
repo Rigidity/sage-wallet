@@ -10,8 +10,11 @@ return await TAURI_INVOKE("plugin:tauri-specta|verify_mnemonic", { mnemonic });
 async keyList() : Promise<KeyList> {
 return await TAURI_INVOKE("plugin:tauri-specta|key_list");
 },
-async importWalletFromMnemonic(name: string, mnemonic: string) : Promise<null> {
-return await TAURI_INVOKE("plugin:tauri-specta|import_wallet_from_mnemonic", { name, mnemonic });
+async importFromMnemonic(name: string, mnemonic: string) : Promise<null> {
+return await TAURI_INVOKE("plugin:tauri-specta|import_from_mnemonic", { name, mnemonic });
+},
+async deleteFingerprint(fingerprint: number) : Promise<null> {
+return await TAURI_INVOKE("plugin:tauri-specta|delete_fingerprint", { fingerprint });
 },
 async logIn(fingerprint: number | null) : Promise<null> {
 return await TAURI_INVOKE("plugin:tauri-specta|log_in", { fingerprint });

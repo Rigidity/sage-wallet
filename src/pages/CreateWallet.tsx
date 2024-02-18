@@ -21,7 +21,7 @@ export default function CreateWallet() {
   };
 
   const createWallet = () => {
-    commands.importWalletFromMnemonic(name, mnemonic).then(() => {
+    commands.importFromMnemonic(name, mnemonic).then(() => {
       navigate("/wallet");
     });
   };

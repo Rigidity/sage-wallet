@@ -20,7 +20,8 @@ fn main() {
             generate_mnemonic,
             verify_mnemonic,
             key_list,
-            import_wallet_from_mnemonic,
+            import_from_mnemonic,
+            delete_fingerprint,
             log_in
         ]);
 
