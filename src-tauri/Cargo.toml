@@ -1,0 +1,24 @@
+[package]
+name = "arbor-wallet"
+version = "0.0.0"
+description = "A Tauri App"
+authors = ["you"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.5", features = [ "clipboard-write-text", "shell-open"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+specta = "=2.0.0-rc.7"
+tauri-specta = { version = "=2.0.0-rc.4", features = ["javascript", "typescript"] }
+bip39 = "2.0.0"
+rand = "0.8.5"
+rand_chacha = "0.3.1"
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]
