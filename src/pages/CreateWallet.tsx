@@ -6,8 +6,11 @@ import { commands } from "../bindings";
 import { Chip } from "primereact/chip";
 import { Divider } from "primereact/divider";
 import { writeText } from "@tauri-apps/api/clipboard";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateWallet() {
+  const navigate = useNavigate();
+
   const [name, setName] = useState("");
   const [long, setLong] = useState(true);
 
@@ -23,6 +26,15 @@ export default function CreateWallet() {
 
   return (
     <div className="surface-card p-4 shadow-2 border-round m-auto mt-8 sm:w-10 md:w-8 lg:w-6">
+      <Button
+        onClick={() => navigate(-1)}
+        icon="pi pi-chevron-left"
+        rounded
+        text
+        size="large"
+        className="absolute"
+      />
+
       <h1 className="mt-0 text-center">Create Wallet</h1>
 
       <Divider />
@@ -52,6 +64,7 @@ export default function CreateWallet() {
           <Button
             onClick={generateMnemonic}
             icon="pi pi-refresh"
+            size="large"
             rounded
             text
           />
@@ -60,6 +73,7 @@ export default function CreateWallet() {
               writeText(mnemonic);
             }}
             icon="pi pi-copy"
+            size="large"
             rounded
             text
           />

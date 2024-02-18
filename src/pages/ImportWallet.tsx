@@ -5,6 +5,7 @@ import { RadioButton } from "primereact/radiobutton";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Form, Formik } from "formik";
 import { commands } from "../bindings";
+import { useNavigate } from "react-router-dom";
 
 const enum Kind {
   Mnemonic = "Mnemonic",
@@ -13,6 +14,8 @@ const enum Kind {
 }
 
 export default function ImportWallet() {
+  const navigate = useNavigate();
+
   const initial = {
     name: "",
     kind: Kind.Mnemonic,
@@ -23,6 +26,15 @@ export default function ImportWallet() {
 
   return (
     <div className="surface-card p-4 shadow-2 border-round m-auto mt-8 sm:w-10 md:w-8 lg:w-6">
+      <Button
+        onClick={() => navigate(-1)}
+        icon="pi pi-chevron-left"
+        rounded
+        text
+        size="large"
+        className="absolute"
+      />
+
       <h1 className="mt-0 text-center">Import Wallet</h1>
 
       <Divider />
