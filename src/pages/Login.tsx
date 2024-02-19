@@ -204,7 +204,7 @@ function KeyItem({ info, setKeys }: KeyItemProps) {
       <Dialog
         header="Rename Wallet"
         visible={renaming}
-        style={{ width: "50vw" }}
+        style={{ width: "40vw" }}
         onHide={() => setRenaming(false)}
       >
         <Formik
