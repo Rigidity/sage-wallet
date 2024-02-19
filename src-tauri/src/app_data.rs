@@ -162,7 +162,7 @@ impl AppData {
     }
 
     fn save_keys(&self) {
-        let data = bincode::serialize(&self.key_list.lock().keys).unwrap();
+        let data = bincode::serialize(&*self.key_list.lock()).unwrap();
 
         let key = encryption_key(&mut *self.rng.lock());
 
