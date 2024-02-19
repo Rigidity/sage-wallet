@@ -112,6 +112,7 @@ export default function CreateWallet() {
                     toast.current?.show({
                       severity: "success",
                       detail: "Copied mnemonic",
+                      life: 2000,
                     });
                   }}
                   icon="pi pi-copy"

@@ -162,6 +162,7 @@ function KeyItem({ info, setKeys, toast }: KeyItemProps) {
                     toast.current?.show({
                       severity: "success",
                       detail: "Copied mnemonic",
+                      life: 2000,
                     });
                   }}
                   icon="pi pi-copy"
@@ -183,6 +184,7 @@ function KeyItem({ info, setKeys, toast }: KeyItemProps) {
                     toast.current?.show({
                       severity: "success",
                       detail: "Copied secret key",
+                      life: 2000,
                     });
                   }}
                   icon="pi pi-copy"
@@ -207,6 +209,7 @@ function KeyItem({ info, setKeys, toast }: KeyItemProps) {
                     toast.current?.show({
                       severity: "success",
                       detail: "Copied public key",
+                      life: 2000,
                     });
                   }}
                   icon="pi pi-copy"
