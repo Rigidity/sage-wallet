@@ -10,7 +10,7 @@ return await TAURI_INVOKE("plugin:tauri-specta|verify_mnemonic", { mnemonic });
 async keyList() : Promise<KeyList> {
 return await TAURI_INVOKE("plugin:tauri-specta|key_list");
 },
-async importFromMnemonic(name: string, mnemonic: string) : Promise<__Result__<null, "Mnemonic" | "SecretKey" | "PublicKey">> {
+async importFromMnemonic(name: string, mnemonic: string) : Promise<__Result__<null, "Mnemonic" | "SecretKey" | "PublicKey" | "DuplicateFingerprint">> {
 try {
     return { status: "ok", data: await TAURI_INVOKE("plugin:tauri-specta|import_from_mnemonic", { name, mnemonic }) };
 } catch (e) {
@@ -18,7 +18,7 @@ try {
     else return { status: "error", error: e  as any };
 }
 },
-async importFromSecretKey(name: string, secretKey: string) : Promise<__Result__<null, "Mnemonic" | "SecretKey" | "PublicKey">> {
+async importFromSecretKey(name: string, secretKey: string) : Promise<__Result__<null, "Mnemonic" | "SecretKey" | "PublicKey" | "DuplicateFingerprint">> {
 try {
     return { status: "ok", data: await TAURI_INVOKE("plugin:tauri-specta|import_from_secret_key", { name, secretKey }) };
 } catch (e) {
@@ -26,7 +26,7 @@ try {
     else return { status: "error", error: e  as any };
 }
 },
-async importFromPublicKey(name: string, publicKey: string) : Promise<__Result__<null, "Mnemonic" | "SecretKey" | "PublicKey">> {
+async importFromPublicKey(name: string, publicKey: string) : Promise<__Result__<null, "Mnemonic" | "SecretKey" | "PublicKey" | "DuplicateFingerprint">> {
 try {
     return { status: "ok", data: await TAURI_INVOKE("plugin:tauri-specta|import_from_public_key", { name, publicKey }) };
 } catch (e) {

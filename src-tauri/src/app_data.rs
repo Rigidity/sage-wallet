@@ -125,6 +125,14 @@ impl AppData {
         self.save_keys();
     }
 
+    pub fn has_key(&self, fingerprint: u32) -> bool {
+        self.key_list
+            .lock()
+            .keys
+            .iter()
+            .any(|key| key.fingerprint == fingerprint)
+    }
+
     pub fn delete_key(&self, fingerprint: u32) {
         let mut key_list = self.key_list.lock();
         key_list.keys.retain(|key| key.fingerprint != fingerprint);

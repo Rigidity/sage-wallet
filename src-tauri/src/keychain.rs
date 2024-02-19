@@ -26,7 +26,7 @@ pub struct KeyInfo {
     pub fingerprint: u32,
 }
 
-#[derive(Serialize, Deserialize, Error, Debug, Type)]
+#[derive(Error, Debug, Type)]
 pub enum Error {
     #[error("invalid mnemonic")]
     Mnemonic,
@@ -36,6 +36,18 @@ pub enum Error {
 
     #[error("invalid public key")]
     PublicKey,
+
+    #[error("fingerprint already exists")]
+    DuplicateFingerprint,
+}
+
+impl Serialize for Error {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
 }
 
 #[command]
@@ -76,6 +88,10 @@ pub fn import_from_mnemonic(
     let public_key = secret_key.public_key();
     let fingerprint = public_key.get_fingerprint();
 
+    if app.has_key(fingerprint) {
+        return Err(Error::DuplicateFingerprint);
+    }
+
     let key_info = KeyInfo {
         name,
         mnemonic: Some(mnemonic),
@@ -101,6 +117,10 @@ pub fn import_from_secret_key(
     let public_key = secret_key.public_key();
     let fingerprint = public_key.get_fingerprint();
 
+    if app.has_key(fingerprint) {
+        return Err(Error::DuplicateFingerprint);
+    }
+
     let key_info = KeyInfo {
         name,
         mnemonic: None,
@@ -124,6 +144,10 @@ pub fn import_from_public_key(
     let bytes: [u8; 48] = hex::decode(public_key).unwrap().try_into().unwrap();
     let public_key = PublicKey::from_bytes(&bytes).map_err(|_| Error::PublicKey)?;
     let fingerprint = public_key.get_fingerprint();
+
+    if app.has_key(fingerprint) {
+        return Err(Error::DuplicateFingerprint);
+    }
 
     let key_info = KeyInfo {
         name,

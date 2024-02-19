@@ -104,7 +104,7 @@ export default function ImportWallet() {
               toast.current?.show({
                 severity: "error",
                 summary: "Error",
-                detail: "Failed to import wallet, invalid key.",
+                detail: `Failed to import wallet, ${result.error}.`,
               });
               setSubmitting(false);
             }
