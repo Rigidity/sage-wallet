@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT `public_key` FROM `derivations`\n            WHERE `index` = ?\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "public_key",
+        "ordinal": 0,
+        "type_info": "Blob"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "b8f8ab276033af88e9c1b25d6a9f60d6e1542be94baea3a548ca861124df9a29"
+}

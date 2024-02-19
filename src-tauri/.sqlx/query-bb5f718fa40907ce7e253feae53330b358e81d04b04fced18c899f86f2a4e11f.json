@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT `puzzle_hash` FROM `derivations`\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "puzzle_hash",
+        "ordinal": 0,
+        "type_info": "Blob"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "bb5f718fa40907ce7e253feae53330b358e81d04b04fced18c899f86f2a4e11f"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                INSERT OR IGNORE INTO `derivations` (\n                    `index`,\n                    `public_key`,\n                    `puzzle_hash`\n                )\n                VALUES (?, ?, ?)\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "1dfb30392af8c2d51a7c23b5e28d38ad3511d4f79155890f9e96cc37a7a7a519"
+}

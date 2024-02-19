@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT `index` FROM `derivations`\n            WHERE `public_key` = ?\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "index",
+        "ordinal": 0,
+        "type_info": "Int64"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "b5694b401fa6d6d567801bb837b94860f34676a1e92a64c8b58c7394c779199f"
+}

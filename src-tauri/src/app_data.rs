@@ -6,6 +6,8 @@ use std::{
 };
 
 use aes_gcm::{aead::Aead, AeadCore, Aes256Gcm, Key, KeyInit, Nonce};
+use chia_bls::{derive_keys::master_to_wallet_unhardened_intermediate, PublicKey};
+use chia_wallet_sdk::PublicKeyStore;
 use keyring::Entry;
 use parking_lot::Mutex;
 use rand::{CryptoRng, Rng, SeedableRng};
@@ -114,15 +116,33 @@ impl AppData {
     }
 
     pub async fn restart_wallet(&self) {
-        let Some(fingerprint) = self.key_list().active_fingerprint else {
+        let key_list = self.key_list();
+
+        let Some(fingerprint) = key_list.active_fingerprint else {
+            *self.wallet.lock() = None;
+            return;
+        };
+        let Some(key) = key_list
+            .keys
+            .iter()
+            .find(|key| key.fingerprint == fingerprint)
+            .cloned()
+        else {
             *self.wallet.lock() = None;
             return;
         };
 
+        let bytes: [u8; 48] = hex::decode(key.public_key).unwrap().try_into().unwrap();
+        let root_pk = PublicKey::from_bytes(&bytes).unwrap();
+        let intermediate_pk = master_to_wallet_unhardened_intermediate(&root_pk);
+
         let path = self.db_path.join(format!("{fingerprint}.sqlite?mode=rwc"));
         let pool = SqlitePool::connect(path.to_str().unwrap()).await.unwrap();
 
-        let db = WalletDb::new(pool);
+        sqlx::migrate!().run(&pool).await.unwrap();
+
+        let db = WalletDb::new(pool, intermediate_pk);
+        db.derive_to_index(100).await;
         let wallet = Wallet::new(db);
 
         *self.wallet.lock() = Some(wallet);

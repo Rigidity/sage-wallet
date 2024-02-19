@@ -1,3 +1,7 @@
+# SQLx
+.env
+test.sqlite
+
 # Logs
 logs
 *.log
