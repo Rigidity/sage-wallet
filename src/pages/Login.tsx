@@ -1,5 +1,6 @@
 import {
   Dispatch,
+  RefObject,
   SetStateAction,
   createRef,
   useEffect,
@@ -18,9 +19,11 @@ import { Dialog } from "primereact/dialog";
 import { Form, Formik } from "formik";
 import { InputText } from "primereact/inputtext";
 import { writeText } from "@tauri-apps/api/clipboard";
+import { Toast } from "primereact/toast";
 
 export default function Login() {
   const [keys, setKeys] = useState<KeyList | null>(null);
+  const toast = createRef<Toast>();
 
   useEffect(() => {
     commands.keyList().then(setKeys);
@@ -32,9 +35,10 @@ export default function Login() {
       <div className="text-5xl text-center m-5">Wallet List</div>
       <div className="grid align-items-center m-4">
         {keys?.keys.map((keyInfo, i) => (
-          <KeyItem key={i} info={keyInfo} setKeys={setKeys} />
+          <KeyItem key={i} info={keyInfo} setKeys={setKeys} toast={toast} />
         ))}
       </div>
+      <Toast ref={toast} />
       <ConfirmDialog />
     </>
   );
@@ -43,9 +47,10 @@ export default function Login() {
 interface KeyItemProps {
   info: KeyInfo;
   setKeys: Dispatch<SetStateAction<KeyList | null>>;
+  toast: RefObject<Toast>;
 }
 
-function KeyItem({ info, setKeys }: KeyItemProps) {
+function KeyItem({ info, setKeys, toast }: KeyItemProps) {
   const navigate = useNavigate();
 
   const [name, setName] = useState(info.name);
@@ -152,7 +157,13 @@ function KeyItem({ info, setKeys }: KeyItemProps) {
               <div className="flex align-items-center">
                 <div className="text-xl">Mnemonic</div>
                 <Button
-                  onClick={() => writeText(info.mnemonic ?? "")}
+                  onClick={() => {
+                    writeText(info.mnemonic ?? "");
+                    toast.current?.show({
+                      severity: "success",
+                      detail: "Copied mnemonic",
+                    });
+                  }}
                   icon="pi pi-copy"
                   rounded
                   text
@@ -167,7 +178,13 @@ function KeyItem({ info, setKeys }: KeyItemProps) {
               <div className="flex align-items-center">
                 <div className="text-xl">Secret Key</div>
                 <Button
-                  onClick={() => writeText(info.secretKey ?? "")}
+                  onClick={() => {
+                    writeText(info.secretKey ?? "");
+                    toast.current?.show({
+                      severity: "success",
+                      detail: "Copied secret key",
+                    });
+                  }}
                   icon="pi pi-copy"
                   rounded
                   text
@@ -185,7 +202,13 @@ function KeyItem({ info, setKeys }: KeyItemProps) {
               <div className="flex align-items-center">
                 <div className="text-xl">Public Key</div>
                 <Button
-                  onClick={() => writeText(info.publicKey ?? "")}
+                  onClick={() => {
+                    writeText(info.publicKey ?? "");
+                    toast.current?.show({
+                      severity: "success",
+                      detail: "Copied public key",
+                    });
+                  }}
                   icon="pi pi-copy"
                   rounded
                   text
