@@ -7,11 +7,11 @@ import { Chip } from "primereact/chip";
 import { Divider } from "primereact/divider";
 import { writeText } from "@tauri-apps/api/clipboard";
 import { useNavigate } from "react-router-dom";
+import { Form, Formik } from "formik";
 
 export default function CreateWallet() {
   const navigate = useNavigate();
 
-  const [name, setName] = useState("");
   const [long, setLong] = useState(true);
 
   const [mnemonic, setMnemonic] = useState("");
@@ -20,15 +20,13 @@ export default function CreateWallet() {
     commands.generateMnemonic(long).then(setMnemonic);
   };
 
-  const createWallet = () => {
-    commands.importFromMnemonic(name, mnemonic).then(() => {
-      navigate("/wallet", { replace: true });
-    });
-  };
-
   useEffect(() => {
     generateMnemonic();
   }, [long]);
+
+  const initial = {
+    name: "",
+  };
 
   return (
     <div className="surface-card p-4 shadow-2 border-round m-auto mt-8 sm:w-10 md:w-8 lg:w-6">
@@ -45,58 +43,92 @@ export default function CreateWallet() {
 
       <Divider />
 
-      <label htmlFor="name" className="block text-base">
-        Name
-      </label>
-      <InputText
-        id="name"
-        placeholder="Wallet Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        className="w-full mt-1"
-      />
+      <Formik
+        initialValues={initial}
+        validate={async (values) => {
+          const errors: Partial<Record<keyof typeof initial, string>> = {};
 
-      <div className="flex align-items-center mt-4">
-        <Checkbox
-          inputId="long"
-          checked={long}
-          onChange={(e) => setLong(e.checked ?? false)}
-        />
-        <label htmlFor="long" className="block ml-2 text-base">
-          24 Word Mnemonic
-        </label>
+          if (!values.name) {
+            errors.name = "Required";
+          }
 
-        <div className="flex align-items-center ml-auto">
-          <Button
-            onClick={generateMnemonic}
-            icon="pi pi-refresh"
-            size="large"
-            rounded
-            text
-          />
-          <Button
-            onClick={() => {
-              writeText(mnemonic);
-            }}
-            icon="pi pi-copy"
-            size="large"
-            rounded
-            text
-          />
-        </div>
-      </div>
+          return errors;
+        }}
+        onSubmit={(values) => {
+          commands.importFromMnemonic(values.name, mnemonic).then(() => {
+            navigate("/wallet", { replace: true });
+          });
+        }}
+      >
+        {({
+          values,
+          errors,
+          touched,
+          isSubmitting,
+          handleChange,
+          handleBlur,
+          handleSubmit,
+        }) => (
+          <Form onSubmit={handleSubmit}>
+            <InputText
+              name="name"
+              placeholder="Name"
+              value={values.name}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              className={`w-full mt-1 ${
+                touched.name && errors.name && "p-invalid"
+              }`}
+            />
+            {touched.name && errors.name && (
+              <div className="text-red-500 mt-1">{errors.name}</div>
+            )}
 
-      <div className="flex align-items-center flex-wrap gap-1 justify-content-center mt-4">
-        {mnemonic.split(" ").map((word, i) => (
-          <Chip key={i} label={word} className="" />
-        ))}
-      </div>
+            <div className="flex align-items-center mt-4">
+              <Checkbox
+                inputId="long"
+                checked={long}
+                onChange={(e) => setLong(e.checked ?? false)}
+              />
+              <label htmlFor="long" className="block ml-2 text-base">
+                24 Word Mnemonic
+              </label>
 
-      <Button
-        onClick={createWallet}
-        label="Create Wallet"
-        className="w-full mt-5"
-      />
+              <div className="flex align-items-center ml-auto">
+                <Button
+                  onClick={generateMnemonic}
+                  icon="pi pi-refresh"
+                  size="large"
+                  rounded
+                  text
+                />
+                <Button
+                  onClick={() => {
+                    writeText(mnemonic);
+                  }}
+                  icon="pi pi-copy"
+                  size="large"
+                  rounded
+                  text
+                />
+              </div>
+            </div>
+
+            <div className="flex align-items-center flex-wrap gap-1 justify-content-center mt-4">
+              {mnemonic.split(" ").map((word, i) => (
+                <Chip key={i} label={word} className="" />
+              ))}
+            </div>
+
+            <Button
+              label="Create Wallet"
+              type="submit"
+              className="w-full mt-5"
+              disabled={isSubmitting}
+            />
+          </Form>
+        )}
+      </Formik>
     </div>
   );
 }
