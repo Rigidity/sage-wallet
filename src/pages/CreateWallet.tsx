@@ -1,7 +1,7 @@
 import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
 import { InputText } from "primereact/inputtext";
-import { createRef, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { commands } from "../bindings";
 import { Chip } from "primereact/chip";
 import { Divider } from "primereact/divider";
@@ -16,7 +16,7 @@ export default function CreateWallet() {
   const [long, setLong] = useState(true);
   const [mnemonic, setMnemonic] = useState("");
 
-  const toast = createRef<Toast>();
+  const toast = useRef<Toast>(null);
 
   const generateMnemonic = () => {
     commands.generateMnemonic(long).then(setMnemonic);

@@ -1,7 +1,7 @@
 import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import { commands } from "../bindings";
-import { createRef } from "react";
+import { useRef } from "react";
 import { Menu } from "primereact/menu";
 import { MenuItem } from "primereact/menuitem";
 import { useLocalStorage } from "usehooks-ts";
@@ -15,7 +15,7 @@ export default function Nav({ canGoBack }: NavProps) {
 
   const [isDarkMode, setDarkMode] = useLocalStorage("dark-mode", false);
 
-  const menu = createRef<Menu>();
+  const menu = useRef<Menu>(null);
 
   const menuItems: Array<MenuItem> = [
     {

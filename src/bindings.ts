@@ -42,6 +42,15 @@ return await TAURI_INVOKE("plugin:tauri-specta|rename_fingerprint", { fingerprin
 },
 async logIn(fingerprint: number | null) : Promise<null> {
 return await TAURI_INVOKE("plugin:tauri-specta|log_in", { fingerprint });
+},
+async networks() : Promise<string[]> {
+return await TAURI_INVOKE("plugin:tauri-specta|networks");
+},
+async activeNetwork() : Promise<string> {
+return await TAURI_INVOKE("plugin:tauri-specta|active_network");
+},
+async switchNetwork(network: string) : Promise<null> {
+return await TAURI_INVOKE("plugin:tauri-specta|switch_network", { network });
 }
 }
 

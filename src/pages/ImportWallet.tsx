@@ -6,7 +6,7 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Form, Formik } from "formik";
 import { commands } from "../bindings";
 import { useNavigate } from "react-router-dom";
-import { createRef } from "react";
+import { useRef } from "react";
 import { Toast } from "primereact/toast";
 
 const enum Kind {
@@ -18,7 +18,7 @@ const enum Kind {
 export default function ImportWallet() {
   const navigate = useNavigate();
 
-  const toast = createRef<Toast>();
+  const toast = useRef<Toast>(null);
 
   const initial = {
     name: "",

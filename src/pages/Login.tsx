@@ -2,8 +2,8 @@ import {
   Dispatch,
   RefObject,
   SetStateAction,
-  createRef,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { KeyInfo, KeyList, commands } from "../bindings";
@@ -23,7 +23,7 @@ import { Toast } from "primereact/toast";
 
 export default function Login() {
   const [keys, setKeys] = useState<KeyList | null>(null);
-  const toast = createRef<Toast>();
+  const toast = useRef<Toast>(null);
 
   useEffect(() => {
     commands.keyList().then(setKeys);
@@ -57,8 +57,8 @@ function KeyItem({ info, setKeys, toast }: KeyItemProps) {
   const [renaming, setRenaming] = useState(false);
   const [details, setDetails] = useState(false);
 
-  const menu = createRef<Menu>();
-  const contextMenu = createRef<ContextMenu>();
+  const menu = useRef<Menu>(null);
+  const contextMenu = useRef<ContextMenu>(null);
 
   const menuItems: Array<MenuItem> = [
     {

@@ -3090,6 +3090,7 @@ dependencies = [
  "tauri-build",
  "tauri-specta",
  "thiserror",
+ "toml 0.8.10",
 ]
 
 [[package]]

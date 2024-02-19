@@ -1,18 +1,15 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod app_data;
 mod keychain;
 mod mnemonic;
+mod network;
 
-use std::sync::Arc;
-
+use app_data::AppData;
 use keychain::*;
 use mnemonic::*;
-use parking_lot::Mutex;
-
-pub struct AppState {
-    key_list: Arc<Mutex<KeyList>>,
-}
+use network::*;
 
 fn main() {
     let specta_builder = {
@@ -25,7 +22,10 @@ fn main() {
             import_from_public_key,
             delete_fingerprint,
             rename_fingerprint,
-            log_in
+            log_in,
+            networks,
+            active_network,
+            switch_network
         ]);
 
         #[cfg(debug_assertions)]
@@ -35,9 +35,7 @@ fn main() {
     };
 
     tauri::Builder::default()
-        .manage(AppState {
-            key_list: Arc::new(Mutex::new(load_keys())),
-        })
+        .manage(AppData::new())
         .plugin(specta_builder)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
