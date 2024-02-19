@@ -14,14 +14,18 @@ import { HelmetProvider } from "react-helmet-async";
 const element = document.querySelector("#root") as HTMLElement;
 const root = ReactDOM.createRoot(element);
 
-const keyList = await commands.keyList();
+async function main() {
+  const keyList = await commands.keyList();
 
-root.render(
-  <StrictMode>
-    <HelmetProvider>
-      <PrimeReactProvider>
-        <App keyList={keyList} />
-      </PrimeReactProvider>
-    </HelmetProvider>
-  </StrictMode>,
-);
+  root.render(
+    <StrictMode>
+      <HelmetProvider>
+        <PrimeReactProvider>
+          <App keyList={keyList} />
+        </PrimeReactProvider>
+      </HelmetProvider>
+    </StrictMode>,
+  );
+}
+
+main();
