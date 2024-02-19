@@ -2,6 +2,7 @@ use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use aes_gcm::{aead::Aead, AeadCore, Aes256Gcm, Key, KeyInit, Nonce};
@@ -10,16 +11,24 @@ use parking_lot::Mutex;
 use rand::{CryptoRng, Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use serde::{Deserialize, Serialize};
+use sqlx::SqlitePool;
 use tauri::api::path::home_dir;
 
-use crate::{KeyInfo, KeyList};
+use crate::{
+    wallet::{Wallet, WalletDb},
+    KeyData, KeyInfo,
+};
 
 pub struct AppData {
     rng: Mutex<ChaCha20Rng>,
+    db_path: PathBuf,
     key_file: PathBuf,
     config_file: PathBuf,
-    key_list: Mutex<KeyList>,
+    key_list: Arc<Mutex<KeyData>>,
     config: Mutex<Config>,
+
+    #[allow(dead_code)]
+    wallet: Mutex<Option<Wallet>>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -44,13 +53,16 @@ impl AppData {
     pub fn new() -> Self {
         let home = home_dir().unwrap();
         let dir = home.join(".sage");
+        fs::create_dir_all(dir.as_path()).unwrap();
+
+        let db_path = dir.join("db");
+        fs::create_dir_all(db_path.as_path()).unwrap();
+
         let key_file = dir.join("keys.bin");
         let config_file = dir.join("config.toml");
 
-        fs::create_dir_all(dir.as_path()).unwrap();
-
         let mut rng = ChaCha20Rng::from_entropy();
-        let key_list = Mutex::new(load_keys(&mut rng, key_file.as_path()));
+        let key_list = Arc::new(Mutex::new(load_keys(&mut rng, key_file.as_path())));
 
         let config = if !config_file.as_path().try_exists().unwrap() {
             let mut networks = HashMap::new();
@@ -92,11 +104,28 @@ impl AppData {
 
         Self {
             rng: Mutex::new(rng),
+            db_path,
             key_file,
             config_file,
             key_list,
             config: Mutex::new(config),
+            wallet: Mutex::new(None),
         }
+    }
+
+    pub async fn restart_wallet(&self) {
+        let Some(fingerprint) = self.key_list().active_fingerprint else {
+            *self.wallet.lock() = None;
+            return;
+        };
+
+        let path = self.db_path.join(format!("{fingerprint}.sqlite?mode=rwc"));
+        let pool = SqlitePool::connect(path.to_str().unwrap()).await.unwrap();
+
+        let db = WalletDb::new(pool);
+        let wallet = Wallet::new(db);
+
+        *self.wallet.lock() = Some(wallet);
     }
 
     pub fn networks(&self) -> Vec<String> {
@@ -107,18 +136,18 @@ impl AppData {
         self.config.lock().active_network.clone()
     }
 
-    pub fn switch_network(&self, network: String) {
+    pub async fn switch_network(&self, network: String) {
         self.config.lock().active_network = network;
         self.save_config();
+        self.restart_wallet().await;
     }
 
-    pub fn key_list(&self) -> KeyList {
+    pub fn key_list(&self) -> KeyData {
         self.key_list.lock().clone()
     }
 
     pub fn add_key(&self, key_info: KeyInfo) {
         let mut key_list = self.key_list.lock();
-        key_list.active_fingerprint = Some(key_info.fingerprint);
         key_list.keys.push(key_info);
 
         drop(key_list);
@@ -143,14 +172,18 @@ impl AppData {
 
         drop(key_list);
         self.save_keys();
+
+        fs::remove_file(self.db_path.join(format!("{fingerprint}.sqlite"))).ok();
     }
 
-    pub fn log_in(&self, fingerprint: Option<u32>) {
-        let mut key_list = self.key_list.lock();
-        key_list.active_fingerprint = fingerprint;
+    pub async fn log_in(&self, fingerprint: Option<u32>) {
+        {
+            let mut key_list = self.key_list.lock();
+            key_list.active_fingerprint = fingerprint;
+        }
 
-        drop(key_list);
         self.save_keys();
+        self.restart_wallet().await;
     }
 
     pub fn rename_key(&self, fingerprint: u32, name: String) {
@@ -199,7 +232,7 @@ impl AppData {
     }
 }
 
-fn load_keys(rng: &mut (impl Rng + CryptoRng), path: &Path) -> KeyList {
+fn load_keys(rng: &mut (impl Rng + CryptoRng), path: &Path) -> KeyData {
     let key = encryption_key(rng);
 
     if let Ok(data) = fs::read(path) {
@@ -216,7 +249,7 @@ fn load_keys(rng: &mut (impl Rng + CryptoRng), path: &Path) -> KeyList {
         return bincode::deserialize(&data).unwrap();
     }
 
-    KeyList::default()
+    KeyData::default()
 }
 
 fn encryption_key(rng: &mut (impl Rng + CryptoRng)) -> Key<Aes256Gcm> {

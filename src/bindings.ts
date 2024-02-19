@@ -7,7 +7,7 @@ return await TAURI_INVOKE("plugin:tauri-specta|generate_mnemonic", { long });
 async verifyMnemonic(mnemonic: string) : Promise<boolean> {
 return await TAURI_INVOKE("plugin:tauri-specta|verify_mnemonic", { mnemonic });
 },
-async keyList() : Promise<KeyList> {
+async keyList() : Promise<KeyData> {
 return await TAURI_INVOKE("plugin:tauri-specta|key_list");
 },
 async importFromMnemonic(name: string, mnemonic: string) : Promise<__Result__<null, "Mnemonic" | "SecretKey" | "PublicKey" | "DuplicateFingerprint">> {
@@ -40,8 +40,13 @@ return await TAURI_INVOKE("plugin:tauri-specta|delete_fingerprint", { fingerprin
 async renameFingerprint(fingerprint: number, name: string) : Promise<null> {
 return await TAURI_INVOKE("plugin:tauri-specta|rename_fingerprint", { fingerprint, name });
 },
-async logIn(fingerprint: number | null) : Promise<null> {
-return await TAURI_INVOKE("plugin:tauri-specta|log_in", { fingerprint });
+async logIn(fingerprint: number | null) : Promise<__Result__<null, null>> {
+try {
+    return { status: "ok", data: await TAURI_INVOKE("plugin:tauri-specta|log_in", { fingerprint }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 },
 async networks() : Promise<string[]> {
 return await TAURI_INVOKE("plugin:tauri-specta|networks");
@@ -49,8 +54,13 @@ return await TAURI_INVOKE("plugin:tauri-specta|networks");
 async activeNetwork() : Promise<string> {
 return await TAURI_INVOKE("plugin:tauri-specta|active_network");
 },
-async switchNetwork(network: string) : Promise<null> {
-return await TAURI_INVOKE("plugin:tauri-specta|switch_network", { network });
+async switchNetwork(network: string) : Promise<__Result__<null, null>> {
+try {
+    return { status: "ok", data: await TAURI_INVOKE("plugin:tauri-specta|switch_network", { network }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -58,8 +68,8 @@ return await TAURI_INVOKE("plugin:tauri-specta|switch_network", { network });
 
 /** user-defined types **/
 
+export type KeyData = { activeFingerprint: number | null; keys: KeyInfo[] }
 export type KeyInfo = { name: string; mnemonic: string | null; secretKey: string | null; publicKey: string; fingerprint: number }
-export type KeyList = { activeFingerprint: number | null; keys: KeyInfo[] }
 
 /** tauri-specta globals **/
 

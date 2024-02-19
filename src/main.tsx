@@ -15,13 +15,13 @@ const element = document.querySelector("#root") as HTMLElement;
 const root = ReactDOM.createRoot(element);
 
 async function main() {
-  const keyList = await commands.keyList();
+  const data = await commands.keyList();
 
   root.render(
     <StrictMode>
       <HelmetProvider>
         <PrimeReactProvider>
-          <App keyList={keyList} />
+          <App data={data} />
         </PrimeReactProvider>
       </HelmetProvider>
     </StrictMode>,

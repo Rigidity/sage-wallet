@@ -5,13 +5,15 @@ mod app_data;
 mod keychain;
 mod mnemonic;
 mod network;
+mod wallet;
 
 use app_data::AppData;
 use keychain::*;
 use mnemonic::*;
 use network::*;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let specta_builder = {
         let specta_builder = tauri_specta::ts::builder().commands(tauri_specta::collect_commands![
             generate_mnemonic,
@@ -34,8 +36,11 @@ fn main() {
         specta_builder.into_plugin()
     };
 
+    let app = AppData::new();
+    app.restart_wallet().await;
+
     tauri::Builder::default()
-        .manage(AppData::new())
+        .manage(app)
         .plugin(specta_builder)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

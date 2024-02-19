@@ -17,6 +17,7 @@ pub fn active_network(app: State<AppData>) -> String {
 
 #[command]
 #[specta]
-pub fn switch_network(app: State<AppData>, network: String) {
-    app.switch_network(network);
+pub async fn switch_network(app: State<'_, AppData>, network: String) -> Result<(), ()> {
+    app.switch_network(network).await;
+    Ok(())
 }

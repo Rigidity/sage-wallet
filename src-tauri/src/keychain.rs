@@ -11,7 +11,7 @@ use crate::app_data::AppData;
 
 #[derive(Default, Serialize, Deserialize, Clone, Type)]
 #[serde(rename_all = "camelCase")]
-pub struct KeyList {
+pub struct KeyData {
     pub active_fingerprint: Option<u32>,
     pub keys: Vec<KeyInfo>,
 }
@@ -52,14 +52,15 @@ impl Serialize for Error {
 
 #[command]
 #[specta]
-pub fn key_list(app: State<AppData>) -> KeyList {
+pub fn key_list(app: State<AppData>) -> KeyData {
     app.key_list()
 }
 
 #[command]
 #[specta]
-pub fn log_in(app: State<AppData>, fingerprint: Option<u32>) {
-    app.log_in(fingerprint);
+pub async fn log_in(app: State<'_, AppData>, fingerprint: Option<u32>) -> Result<(), ()> {
+    app.log_in(fingerprint).await;
+    Ok(())
 }
 
 #[command]
@@ -76,8 +77,8 @@ pub fn rename_fingerprint(app: State<AppData>, fingerprint: u32, name: String) {
 
 #[command]
 #[specta]
-pub fn import_from_mnemonic(
-    app: State<AppData>,
+pub async fn import_from_mnemonic(
+    app: State<'_, AppData>,
     name: String,
     mnemonic: String,
 ) -> Result<(), Error> {
@@ -101,14 +102,15 @@ pub fn import_from_mnemonic(
     };
 
     app.add_key(key_info);
+    app.log_in(Some(fingerprint)).await;
 
     Ok(())
 }
 
 #[command]
 #[specta]
-pub fn import_from_secret_key(
-    app: State<AppData>,
+pub async fn import_from_secret_key(
+    app: State<'_, AppData>,
     name: String,
     secret_key: String,
 ) -> Result<(), Error> {
@@ -130,14 +132,15 @@ pub fn import_from_secret_key(
     };
 
     app.add_key(key_info);
+    app.log_in(Some(fingerprint)).await;
 
     Ok(())
 }
 
 #[command]
 #[specta]
-pub fn import_from_public_key(
-    app: State<AppData>,
+pub async fn import_from_public_key(
+    app: State<'_, AppData>,
     name: String,
     public_key: String,
 ) -> Result<(), Error> {
@@ -158,6 +161,7 @@ pub fn import_from_public_key(
     };
 
     app.add_key(key_info);
+    app.log_in(Some(fingerprint)).await;
 
     Ok(())
 }

@@ -101,6 +101,7 @@ export default function CreateWallet() {
               <div className="flex align-items-center ml-auto">
                 <Button
                   onClick={generateMnemonic}
+                  type="button"
                   icon="pi pi-refresh"
                   size="large"
                   rounded
@@ -115,6 +116,7 @@ export default function CreateWallet() {
                       life: 2000,
                     });
                   }}
+                  type="button"
                   icon="pi pi-copy"
                   size="large"
                   rounded

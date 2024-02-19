@@ -4,22 +4,21 @@ import ImportWallet from "./pages/ImportWallet";
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
 import Wallet from "./pages/Wallet";
-import { KeyList } from "./bindings";
+import { KeyData } from "./bindings";
 import Settings from "./pages/Settings";
 import { Helmet } from "react-helmet-async";
 import { useLocalStorage } from "usehooks-ts";
 
 export interface AppProps {
-  keyList: KeyList;
+  data: KeyData;
 }
 
-export default function App({ keyList }: AppProps) {
+export default function App({ data }: AppProps) {
   const [isDarkMode] = useLocalStorage("dark-mode", false);
 
   const isInWallet =
-    keyList.keys.findIndex(
-      (key) => key.fingerprint === keyList.activeFingerprint,
-    ) !== -1;
+    data.keys.findIndex((key) => key.fingerprint === data.activeFingerprint) !==
+    -1;
 
   return (
     <>
@@ -40,7 +39,7 @@ export default function App({ keyList }: AppProps) {
       </Helmet>
       <MemoryRouter
         initialEntries={[
-          isInWallet ? "/wallet" : keyList.keys.length ? "/login" : "/welcome",
+          isInWallet ? "/wallet" : data.keys.length ? "/login" : "/welcome",
         ]}
       >
         <Routes>
