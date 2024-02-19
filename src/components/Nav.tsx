@@ -1,14 +1,17 @@
 import { Button } from "primereact/button";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { commands } from "../bindings";
 import { createRef } from "react";
 import { Menu } from "primereact/menu";
 import { MenuItem } from "primereact/menuitem";
 import { useLocalStorage } from "usehooks-ts";
 
-export default function Nav() {
+export interface NavProps {
+  canGoBack?: boolean;
+}
+
+export default function Nav({ canGoBack }: NavProps) {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [isDarkMode, setDarkMode] = useLocalStorage("dark-mode", false);
 
@@ -43,7 +46,7 @@ export default function Nav() {
           icon: "pi pi-fw pi-sign-out",
           command: () => {
             commands.logIn(null).then(() => {
-              navigate("/login");
+              navigate("/login", { replace: true });
             });
           },
         },
@@ -54,7 +57,7 @@ export default function Nav() {
   return (
     <div className="flex justify-content-end p-3">
       <div className="flex gap-3">
-        {location.key !== "default" && (
+        {canGoBack && (
           <Button
             onClick={() => navigate(-1)}
             icon="pi pi-chevron-left"

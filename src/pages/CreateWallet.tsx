@@ -22,7 +22,7 @@ export default function CreateWallet() {
 
   const createWallet = () => {
     commands.importFromMnemonic(name, mnemonic).then(() => {
-      navigate("/wallet");
+      navigate("/wallet", { replace: true });
     });
   };
 

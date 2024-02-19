@@ -12,13 +12,13 @@ export default function Welcome() {
       <Button
         label="Create Wallet"
         className="mt-6 w-full"
-        onClick={() => navigate("/create-wallet")}
+        onClick={() => navigate("/create-wallet", { replace: true })}
       />
       <Button
         label="Import Wallet"
         className="mt-2 w-full"
         outlined
-        onClick={() => navigate("/import-wallet")}
+        onClick={() => navigate("/import-wallet", { replace: true })}
       />
     </div>
   );

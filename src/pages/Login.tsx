@@ -12,6 +12,7 @@ import { Button } from "primereact/button";
 import { Menu } from "primereact/menu";
 import { MenuItem } from "primereact/menuitem";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import Nav from "../components/Nav";
 
 export default function Login() {
   const [keys, setKeys] = useState<KeyList | null>(null);
@@ -21,11 +22,16 @@ export default function Login() {
   }, []);
 
   return (
-    <div className="grid m-6">
-      {keys?.keys.map((keyInfo, i) => (
-        <KeyItem key={i} info={keyInfo} setKeys={setKeys} />
-      ))}
-    </div>
+    <>
+      <Nav />
+      <div className="text-5xl text-center m-5">Wallet List</div>
+      <div className="grid align-items-center m-4">
+        {keys?.keys.map((keyInfo, i) => (
+          <KeyItem key={i} info={keyInfo} setKeys={setKeys} />
+        ))}
+      </div>
+      <ConfirmDialog />
+    </>
   );
 }
 
@@ -60,17 +66,18 @@ function KeyItem({ info, setKeys }: KeyItemProps) {
           header: "Delete Confirmation",
           message: "Are you sure you want to delete this wallet key?",
           icon: "pi pi-info-circle",
-          accept: () =>
+          accept: () => {
             commands
               .deleteFingerprint(info.fingerprint)
               .then(commands.keyList)
               .then((keyList) => {
                 if (!keyList.keys.length) {
-                  navigate("/welcome");
+                  navigate("/welcome", { replace: true });
                 } else {
                   setKeys(keyList);
                 }
-              }),
+              });
+          },
         });
       },
     },
@@ -78,7 +85,7 @@ function KeyItem({ info, setKeys }: KeyItemProps) {
 
   const logIn = () => {
     commands.logIn(info.fingerprint).then(() => {
-      navigate("/wallet");
+      navigate("/wallet", { replace: true });
     });
   };
 
@@ -86,7 +93,7 @@ function KeyItem({ info, setKeys }: KeyItemProps) {
     <div className="col-12 md:col-6 lg:col-4 cursor-pointer">
       <div
         onClick={logIn}
-        className="surface-0 shadow-2 p-3 border-1 border-50 border-round"
+        className="surface-0 shadow-2 p-3 border-1 border-50 border-round-xl"
       >
         <div className="flex justify-content-between mb-3">
           <div>
@@ -114,7 +121,6 @@ function KeyItem({ info, setKeys }: KeyItemProps) {
           <Tag icon="pi pi-wallet" value="Cold Wallet" severity="info" />
         )}
       </div>
-      <ConfirmDialog />
     </div>
   );
 }
