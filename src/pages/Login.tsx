@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { KeyInfo, KeyList, commands } from "../bindings";
+import { KeyInfo, KeyData, commands } from "../bindings";
 import { Tag } from "primereact/tag";
 import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
@@ -22,7 +22,7 @@ import { writeText } from "@tauri-apps/api/clipboard";
 import { Toast } from "primereact/toast";
 
 export default function Login() {
-  const [keys, setKeys] = useState<KeyList | null>(null);
+  const [keys, setKeys] = useState<KeyData | null>(null);
   const toast = useRef<Toast>(null);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function Login() {
 
 interface KeyItemProps {
   info: KeyInfo;
-  setKeys: Dispatch<SetStateAction<KeyList | null>>;
+  setKeys: Dispatch<SetStateAction<KeyData | null>>;
   toast: RefObject<Toast>;
 }
 
