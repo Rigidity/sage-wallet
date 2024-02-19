@@ -61,6 +61,14 @@ try {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async fetchDerivations() : Promise<__Result__<string[], null>> {
+try {
+    return { status: "ok", data: await TAURI_INVOKE("plugin:tauri-specta|fetch_derivations") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 

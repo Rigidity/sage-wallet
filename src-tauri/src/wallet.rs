@@ -156,7 +156,7 @@ impl DerivationStore for WalletDb {
 }
 
 pub struct Wallet {
-    db: WalletDb,
+    pub db: WalletDb,
 }
 
 impl Wallet {

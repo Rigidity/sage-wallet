@@ -6,11 +6,13 @@ mod keychain;
 mod mnemonic;
 mod network;
 mod wallet;
+mod wallet_cmds;
 
 use app_data::AppData;
 use keychain::*;
 use mnemonic::*;
 use network::*;
+use wallet_cmds::*;
 
 #[tokio::main]
 async fn main() {
@@ -27,7 +29,8 @@ async fn main() {
             log_in,
             networks,
             active_network,
-            switch_network
+            switch_network,
+            fetch_derivations
         ]);
 
         #[cfg(debug_assertions)]

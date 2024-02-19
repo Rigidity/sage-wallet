@@ -27,10 +27,9 @@ pub struct AppData {
     key_file: PathBuf,
     config_file: PathBuf,
     key_list: Arc<Mutex<KeyData>>,
-    config: Mutex<Config>,
 
-    #[allow(dead_code)]
-    wallet: Mutex<Option<Wallet>>,
+    pub config: Mutex<Config>,
+    pub wallet: Mutex<Option<Arc<Wallet>>>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -40,15 +39,22 @@ struct EncryptedKeys {
 }
 
 #[derive(Serialize, Deserialize)]
-struct Config {
-    networks: HashMap<String, Network>,
-    active_network: String,
+pub struct Config {
+    pub networks: HashMap<String, Network>,
+    pub active_network: String,
+}
+
+impl Config {
+    pub fn network(&self) -> &Network {
+        &self.networks[&self.active_network]
+    }
 }
 
 #[derive(Serialize, Deserialize)]
-struct Network {
-    dns_introducers: Vec<String>,
-    agg_sig_data: String,
+pub struct Network {
+    pub dns_introducers: Vec<String>,
+    pub address_prefix: String,
+    pub agg_sig_data: String,
 }
 
 impl AppData {
@@ -72,6 +78,7 @@ impl AppData {
                 "mainnet".to_string(),
                 Network {
                     dns_introducers: vec!["dns-introducer.chia.net".to_string()],
+                    address_prefix: "xch".to_string(),
                     agg_sig_data:
                         "ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb"
                             .to_string(),
@@ -81,6 +88,7 @@ impl AppData {
                 "simulator0".to_string(),
                 Network {
                     dns_introducers: Vec::new(),
+                    address_prefix: "xch".to_string(),
                     agg_sig_data:
                         "ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb"
                             .to_string(),
@@ -143,7 +151,7 @@ impl AppData {
 
         let db = WalletDb::new(pool, intermediate_pk);
         db.derive_to_index(100).await;
-        let wallet = Wallet::new(db);
+        let wallet = Arc::new(Wallet::new(db));
 
         *self.wallet.lock() = Some(wallet);
     }
