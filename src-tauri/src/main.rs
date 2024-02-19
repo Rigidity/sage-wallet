@@ -21,7 +21,10 @@ fn main() {
             verify_mnemonic,
             key_list,
             import_from_mnemonic,
+            import_from_secret_key,
+            import_from_public_key,
             delete_fingerprint,
+            rename_fingerprint,
             log_in
         ]);
 

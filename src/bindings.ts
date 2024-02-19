@@ -10,11 +10,35 @@ return await TAURI_INVOKE("plugin:tauri-specta|verify_mnemonic", { mnemonic });
 async keyList() : Promise<KeyList> {
 return await TAURI_INVOKE("plugin:tauri-specta|key_list");
 },
-async importFromMnemonic(name: string, mnemonic: string) : Promise<null> {
-return await TAURI_INVOKE("plugin:tauri-specta|import_from_mnemonic", { name, mnemonic });
+async importFromMnemonic(name: string, mnemonic: string) : Promise<__Result__<null, "Mnemonic" | "SecretKey" | "PublicKey">> {
+try {
+    return { status: "ok", data: await TAURI_INVOKE("plugin:tauri-specta|import_from_mnemonic", { name, mnemonic }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async importFromSecretKey(name: string, secretKey: string) : Promise<__Result__<null, "Mnemonic" | "SecretKey" | "PublicKey">> {
+try {
+    return { status: "ok", data: await TAURI_INVOKE("plugin:tauri-specta|import_from_secret_key", { name, secretKey }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async importFromPublicKey(name: string, publicKey: string) : Promise<__Result__<null, "Mnemonic" | "SecretKey" | "PublicKey">> {
+try {
+    return { status: "ok", data: await TAURI_INVOKE("plugin:tauri-specta|import_from_public_key", { name, publicKey }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 },
 async deleteFingerprint(fingerprint: number) : Promise<null> {
 return await TAURI_INVOKE("plugin:tauri-specta|delete_fingerprint", { fingerprint });
+},
+async renameFingerprint(fingerprint: number, name: string) : Promise<null> {
+return await TAURI_INVOKE("plugin:tauri-specta|rename_fingerprint", { fingerprint, name });
 },
 async logIn(fingerprint: number | null) : Promise<null> {
 return await TAURI_INVOKE("plugin:tauri-specta|log_in", { fingerprint });

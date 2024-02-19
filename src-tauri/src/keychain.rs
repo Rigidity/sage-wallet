@@ -2,13 +2,14 @@ use std::{fs, path::PathBuf, str::FromStr};
 
 use aes_gcm::{aead::Aead, AeadCore, Aes256Gcm, Key, KeyInit, Nonce};
 use bip39::Mnemonic;
-use chia_bls::SecretKey;
-use keyring::{Entry, Error};
+use chia_bls::{PublicKey, SecretKey};
+use keyring::Entry;
 use rand::{CryptoRng, Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use serde::{Deserialize, Serialize};
 use specta::{specta, Type};
 use tauri::{api::path::home_dir, command, State};
+use thiserror::Error;
 
 use crate::AppState;
 
@@ -27,6 +28,18 @@ pub struct KeyInfo {
     pub secret_key: Option<String>,
     pub public_key: String,
     pub fingerprint: u32,
+}
+
+#[derive(Serialize, Deserialize, Error, Debug, Type)]
+pub enum Error {
+    #[error("invalid mnemonic")]
+    Mnemonic,
+
+    #[error("invalid secret key")]
+    SecretKey,
+
+    #[error("invalid public key")]
+    PublicKey,
 }
 
 #[command]
@@ -58,8 +71,29 @@ pub fn delete_fingerprint(state: State<AppState>, fingerprint: u32) {
 
 #[command]
 #[specta]
-pub fn import_from_mnemonic(state: State<AppState>, name: String, mnemonic: String) {
-    let seed = Mnemonic::from_str(&mnemonic).unwrap().to_seed("");
+pub fn rename_fingerprint(state: State<AppState>, fingerprint: u32, name: String) {
+    let mut key_list = state.key_list.lock();
+
+    let key = key_list
+        .keys
+        .iter_mut()
+        .find(|key| key.fingerprint == fingerprint);
+
+    if let Some(key) = key {
+        key.name = name;
+    }
+}
+
+#[command]
+#[specta]
+pub fn import_from_mnemonic(
+    state: State<AppState>,
+    name: String,
+    mnemonic: String,
+) -> Result<(), Error> {
+    let seed = Mnemonic::from_str(&mnemonic)
+        .map_err(|_| Error::Mnemonic)?
+        .to_seed("");
     let secret_key = SecretKey::from_seed(&seed);
     let public_key = secret_key.public_key();
     let fingerprint = public_key.get_fingerprint();
@@ -76,6 +110,63 @@ pub fn import_from_mnemonic(state: State<AppState>, name: String, mnemonic: Stri
     key_list.keys.push(key_info);
     key_list.active_fingerprint = Some(fingerprint);
     save_keys(&key_list);
+
+    Ok(())
+}
+
+#[command]
+#[specta]
+pub fn import_from_secret_key(
+    state: State<AppState>,
+    name: String,
+    secret_key: String,
+) -> Result<(), Error> {
+    let bytes: [u8; 32] = hex::decode(secret_key).unwrap().try_into().unwrap();
+    let secret_key = SecretKey::from_bytes(&bytes).map_err(|_| Error::SecretKey)?;
+    let public_key = secret_key.public_key();
+    let fingerprint = public_key.get_fingerprint();
+
+    let key_info = KeyInfo {
+        name,
+        mnemonic: None,
+        secret_key: Some(hex::encode(secret_key.to_bytes())),
+        public_key: hex::encode(public_key.to_bytes()),
+        fingerprint,
+    };
+
+    let mut key_list = state.key_list.lock();
+    key_list.keys.push(key_info);
+    key_list.active_fingerprint = Some(fingerprint);
+    save_keys(&key_list);
+
+    Ok(())
+}
+
+#[command]
+#[specta]
+pub fn import_from_public_key(
+    state: State<AppState>,
+    name: String,
+    public_key: String,
+) -> Result<(), Error> {
+    let bytes: [u8; 48] = hex::decode(public_key).unwrap().try_into().unwrap();
+    let public_key = PublicKey::from_bytes(&bytes).map_err(|_| Error::PublicKey)?;
+    let fingerprint = public_key.get_fingerprint();
+
+    let key_info = KeyInfo {
+        name,
+        mnemonic: None,
+        secret_key: None,
+        public_key: hex::encode(public_key.to_bytes()),
+        fingerprint,
+    };
+
+    let mut key_list = state.key_list.lock();
+    key_list.keys.push(key_info);
+    key_list.active_fingerprint = Some(fingerprint);
+    save_keys(&key_list);
+
+    Ok(())
 }
 
 fn encryption_key(rng: &mut (impl Rng + CryptoRng)) -> Key<Aes256Gcm> {
@@ -83,7 +174,7 @@ fn encryption_key(rng: &mut (impl Rng + CryptoRng)) -> Key<Aes256Gcm> {
 
     match entry.get_password() {
         Ok(key) => *Key::<Aes256Gcm>::from_slice(&hex::decode(key).unwrap()),
-        Err(Error::NoEntry) => {
+        Err(keyring::Error::NoEntry) => {
             let key = Aes256Gcm::generate_key(rng);
             entry.set_password(&hex::encode(key)).unwrap();
             key

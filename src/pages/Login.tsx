@@ -13,6 +13,11 @@ import { Menu } from "primereact/menu";
 import { MenuItem } from "primereact/menuitem";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import Nav from "../components/Nav";
+import { ContextMenu } from "primereact/contextmenu";
+import { Dialog } from "primereact/dialog";
+import { Form, Formik } from "formik";
+import { InputText } from "primereact/inputtext";
+import { writeText } from "@tauri-apps/api/clipboard";
 
 export default function Login() {
   const [keys, setKeys] = useState<KeyList | null>(null);
@@ -43,18 +48,23 @@ interface KeyItemProps {
 function KeyItem({ info, setKeys }: KeyItemProps) {
   const navigate = useNavigate();
 
+  const [name, setName] = useState(info.name);
+  const [renaming, setRenaming] = useState(false);
+  const [details, setDetails] = useState(false);
+
   const menu = createRef<Menu>();
+  const contextMenu = createRef<ContextMenu>();
 
   const menuItems: Array<MenuItem> = [
     {
       label: "Rename",
       icon: "pi pi-fw pi-pencil",
-      command: () => {}, // TODO
+      command: () => setRenaming(true),
     },
     {
-      label: "Details",
+      label: "Key Details",
       icon: "pi pi-fw pi-info-circle",
-      command: () => {}, // TODO
+      command: () => setDetails(true),
     },
 
     {
@@ -89,8 +99,15 @@ function KeyItem({ info, setKeys }: KeyItemProps) {
     });
   };
 
+  const initial = {
+    name: "",
+  };
+
   return (
-    <div className="col-12 md:col-6 lg:col-4 cursor-pointer">
+    <div
+      onContextMenu={(event) => contextMenu.current?.show(event)}
+      className="col-12 md:col-6 lg:col-4 cursor-pointer"
+    >
       <div
         onClick={logIn}
         className="surface-0 shadow-2 p-3 border-1 border-50 border-round-xl"
@@ -100,10 +117,11 @@ function KeyItem({ info, setKeys }: KeyItemProps) {
             <span className="block text-500 font-medium mb-3">
               {info.fingerprint}
             </span>
-            <div className="text-900 font-medium text-xl">{info.name}</div>
+            <div className="text-900 font-medium text-xl">{name}</div>
           </div>
 
           <Menu model={menuItems} popup ref={menu} popupAlignment="left" />
+          <ContextMenu model={menuItems} ref={contextMenu} />
           <Button
             onClick={(event) => {
               event.stopPropagation();
@@ -121,6 +139,128 @@ function KeyItem({ info, setKeys }: KeyItemProps) {
           <Tag icon="pi pi-wallet" value="Cold Wallet" severity="info" />
         )}
       </div>
+
+      <Dialog
+        header="Wallet Details"
+        visible={details}
+        style={{ width: "50vw" }}
+        onHide={() => setDetails(false)}
+      >
+        <div className="flex flex-column gap-4">
+          {info.mnemonic && (
+            <div>
+              <div className="flex align-items-center">
+                <div className="text-xl">Mnemonic</div>
+                <Button
+                  onClick={() => writeText(info.mnemonic ?? "")}
+                  icon="pi pi-copy"
+                  rounded
+                  text
+                  size="large"
+                />
+              </div>
+              <div className="text-600">{info.mnemonic}</div>
+            </div>
+          )}
+          {info.secretKey && (
+            <div>
+              <div className="flex align-items-center">
+                <div className="text-xl">Secret Key</div>
+                <Button
+                  onClick={() => writeText(info.secretKey ?? "")}
+                  icon="pi pi-copy"
+                  rounded
+                  text
+                  size="large"
+                />
+              </div>
+
+              <div className="text-600" style={{ wordWrap: "break-word" }}>
+                {info.secretKey}
+              </div>
+            </div>
+          )}
+          {info.publicKey && (
+            <div>
+              <div className="flex align-items-center">
+                <div className="text-xl">Public Key</div>
+                <Button
+                  onClick={() => writeText(info.publicKey ?? "")}
+                  icon="pi pi-copy"
+                  rounded
+                  text
+                  size="large"
+                />
+              </div>
+
+              <div className="text-600" style={{ wordWrap: "break-word" }}>
+                {info.publicKey}
+              </div>
+            </div>
+          )}
+        </div>
+      </Dialog>
+
+      <Dialog
+        header="Rename Wallet"
+        visible={renaming}
+        style={{ width: "50vw" }}
+        onHide={() => setRenaming(false)}
+      >
+        <Formik
+          initialValues={initial}
+          validate={async (values) => {
+            const errors: Partial<Record<keyof typeof initial, string>> = {};
+
+            if (!values.name) {
+              errors.name = "Required";
+            }
+
+            return errors;
+          }}
+          onSubmit={(values) => {
+            commands
+              .renameFingerprint(info.fingerprint, values.name)
+              .then(() => {
+                setRenaming(false);
+                setName(values.name);
+              });
+          }}
+        >
+          {({
+            values,
+            errors,
+            touched,
+            isSubmitting,
+            handleChange,
+            handleBlur,
+            handleSubmit,
+          }) => (
+            <Form onSubmit={handleSubmit}>
+              <InputText
+                name="name"
+                placeholder="Name"
+                value={values.name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={`w-full mt-1 ${
+                  touched.name && errors.name && "p-invalid"
+                }`}
+              />
+              {touched.name && errors.name && (
+                <div className="text-red-500 mt-1">{errors.name}</div>
+              )}
+
+              <Button
+                label="Rename Wallet"
+                type="submit"
+                className="w-full mt-3"
+                disabled={isSubmitting}
+              />
+            </Form>
+          )}
+        </Formik>
+      </Dialog>
     </div>
   );
 }

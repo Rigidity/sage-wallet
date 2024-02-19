@@ -6,6 +6,8 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Form, Formik } from "formik";
 import { commands } from "../bindings";
 import { useNavigate } from "react-router-dom";
+import { createRef } from "react";
+import { Toast } from "primereact/toast";
 
 const enum Kind {
   Mnemonic = "Mnemonic",
@@ -15,6 +17,8 @@ const enum Kind {
 
 export default function ImportWallet() {
   const navigate = useNavigate();
+
+  const toast = createRef<Toast>();
 
   const initial = {
     name: "",
@@ -26,6 +30,8 @@ export default function ImportWallet() {
 
   return (
     <div className="surface-card p-4 shadow-2 border-round m-auto mt-8 sm:w-10 md:w-8 lg:w-6">
+      <Toast ref={toast} />
+
       <Button
         onClick={() => navigate(-1)}
         icon="pi pi-chevron-left"
@@ -67,11 +73,19 @@ export default function ImportWallet() {
                 errors.secretKey = "Required";
               }
 
+              if (!/(?:0[xX])?[0-9a-fA-F]{64}/.test(values.secretKey)) {
+                errors.secretKey = "Invalid secret key";
+              }
+
               break;
             }
             case Kind.PublicKey: {
               if (!values.publicKey) {
                 errors.publicKey = "Required";
+              }
+
+              if (!/(?:0[xX])?[0-9a-fA-F]{96}/.test(values.publicKey)) {
+                errors.publicKey = "Invalid public key";
               }
 
               break;
@@ -80,8 +94,48 @@ export default function ImportWallet() {
 
           return errors;
         }}
-        onSubmit={(...args) => {
-          console.log(args);
+        onSubmit={(values, { setSubmitting }) => {
+          const finished = (
+            result: Awaited<ReturnType<typeof commands.importFromMnemonic>>,
+          ) => {
+            if (result.status === "ok") {
+              navigate("/wallet", { replace: true });
+            } else {
+              toast.current?.show({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to import wallet, invalid key.",
+              });
+              setSubmitting(false);
+            }
+          };
+
+          switch (values.kind) {
+            case Kind.Mnemonic: {
+              commands
+                .importFromMnemonic(values.name, values.mnemonic)
+                .then(finished);
+              break;
+            }
+            case Kind.SecretKey: {
+              commands
+                .importFromSecretKey(
+                  values.name,
+                  values.secretKey.replace(/0[xX]/, "").toLowerCase(),
+                )
+                .then(finished);
+              break;
+            }
+            case Kind.PublicKey: {
+              commands
+                .importFromPublicKey(
+                  values.name,
+                  values.publicKey.replace(/0[xX]/, "").toLowerCase(),
+                )
+                .then(finished);
+              break;
+            }
+          }
         }}
       >
         {({
@@ -152,52 +206,58 @@ export default function ImportWallet() {
 
             <div className="mt-4">
               {values.kind === Kind.Mnemonic && (
-                <InputTextarea
-                  placeholder="Mnemonic phrase"
-                  name="mnemonic"
-                  value={values.mnemonic}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  rows={3}
-                  className={`w-full ${
-                    touched.mnemonic && errors.mnemonic && "p-invalid"
-                  }`}
-                />
-              )}
-              {touched.mnemonic && errors.mnemonic && (
-                <div className="text-red-500 mt-1">{errors.mnemonic}</div>
+                <>
+                  <InputTextarea
+                    placeholder="Mnemonic phrase"
+                    name="mnemonic"
+                    value={values.mnemonic}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    rows={3}
+                    className={`w-full ${
+                      touched.mnemonic && errors.mnemonic && "p-invalid"
+                    }`}
+                  />
+                  {touched.mnemonic && errors.mnemonic && (
+                    <div className="text-red-500 mt-1">{errors.mnemonic}</div>
+                  )}
+                </>
               )}
 
               {values.kind === Kind.SecretKey && (
-                <InputText
-                  placeholder="Secret key"
-                  name="secretKey"
-                  value={values.secretKey}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={`w-full ${
-                    touched.secretKey && errors.secretKey && "p-invalid"
-                  }`}
-                />
-              )}
-              {touched.secretKey && errors.secretKey && (
-                <div className="text-red-500 mt-1">{errors.secretKey}</div>
+                <>
+                  <InputText
+                    placeholder="Secret key"
+                    name="secretKey"
+                    value={values.secretKey}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className={`w-full ${
+                      touched.secretKey && errors.secretKey && "p-invalid"
+                    }`}
+                  />
+                  {touched.secretKey && errors.secretKey && (
+                    <div className="text-red-500 mt-1">{errors.secretKey}</div>
+                  )}
+                </>
               )}
 
               {values.kind === Kind.PublicKey && (
-                <InputText
-                  placeholder="Public key"
-                  name="publicKey"
-                  value={values.publicKey}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={`w-full ${
-                    touched.publicKey && errors.publicKey && "p-invalid"
-                  }`}
-                />
-              )}
-              {touched.publicKey && errors.publicKey && (
-                <div className="text-red-500 mt-1">{errors.publicKey}</div>
+                <>
+                  <InputText
+                    placeholder="Public key"
+                    name="publicKey"
+                    value={values.publicKey}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className={`w-full ${
+                      touched.publicKey && errors.publicKey && "p-invalid"
+                    }`}
+                  />
+                  {touched.publicKey && errors.publicKey && (
+                    <div className="text-red-500 mt-1">{errors.publicKey}</div>
+                  )}
+                </>
               )}
             </div>
 
